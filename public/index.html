@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mini Control Panel</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <h1>Mini Panel</h1>
+          <p>Create / Edit / Run / Proxy</p>
+        </div>
+
+        <section class="panel form-panel">
+          <h2>Tạo project</h2>
+          <label>
+            Tên project
+            <input id="project-name" placeholder="my-app" />
+          </label>
+          <label>
+            Nguồn
+            <select id="source-type">
+              <option value="template">Template</option>
+              <option value="git">Git</option>
+            </select>
+          </label>
+          <div id="template-fields">
+            <label>
+              Template
+              <select id="template-name">
+                <option value="blank">blank</option>
+                <option value="static-site">static-site</option>
+                <option value="node-api">node-api</option>
+              </select>
+            </label>
+          </div>
+          <div id="git-fields" class="hidden">
+            <label>
+              Git URL
+              <input id="git-url" placeholder="https://github.com/user/repo.git" />
+            </label>
+            <label>
+              Branch
+              <input id="git-branch" placeholder="main" />
+            </label>
+          </div>
+          <button id="create-project-btn">Tạo project</button>
+        </section>
+
+        <section class="panel">
+          <div class="section-head">
+            <h2>Projects</h2>
+            <button id="refresh-projects-btn">↻</button>
+          </div>
+          <div id="projects-list" class="list"></div>
+        </section>
+
+        <section class="panel form-panel">
+          <h2>Proxy route</h2>
+          <label>
+            Prefix
+            <input id="proxy-prefix" placeholder="/apps/demo" />
+          </label>
+          <label>
+            Target
+            <input id="proxy-target" placeholder="http://127.0.0.1:4010" />
+          </label>
+          <button id="create-proxy-btn">Tạo proxy</button>
+          <div id="proxy-list" class="list compact"></div>
+        </section>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <h2 id="active-project-name">Chưa chọn project</h2>
+            <p id="active-project-root">—</p>
+          </div>
+          <div class="actions">
+            <input id="run-command" placeholder="npm install && npm start" />
+            <button id="run-btn">Run</button>
+            <button id="stop-btn" class="danger">Stop</button>
+          </div>
+        </header>
+
+        <section class="workspace-grid">
+          <section class="panel file-tree-panel">
+            <div class="section-head">
+              <h2>Files</h2>
+              <div>
+                <button id="back-folder-btn">⬅</button>
+                <button id="refresh-files-btn">↻</button>
+              </div>
+            </div>
+            <p id="current-folder-label" class="muted">/</p>
+            <div id="file-tree" class="list"></div>
+          </section>
+
+          <section class="panel editor-panel">
+            <div class="section-head">
+              <h2 id="editor-file-label">Editor</h2>
+              <button id="save-file-btn">Lưu file</button>
+            </div>
+            <textarea id="editor" spellcheck="false" placeholder="Chọn file để sửa..."></textarea>
+          </section>
+        </section>
+
+        <section class="bottom-grid">
+          <section class="panel terminal-panel">
+            <div class="section-head">
+              <h2>Shell</h2>
+              <button id="reconnect-shell-btn">Reconnect</button>
+            </div>
+            <pre id="shell-output" class="console"></pre>
+            <div class="shell-input-row">
+              <input id="shell-input" placeholder="gõ lệnh rồi Enter" />
+              <button id="send-shell-btn">Send</button>
+            </div>
+          </section>
+
+          <section class="panel logs-panel">
+            <div class="section-head">
+              <h2>Logs</h2>
+              <button id="clear-logs-btn">Clear view</button>
+            </div>
+            <pre id="logs-output" class="console"></pre>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast"></div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
