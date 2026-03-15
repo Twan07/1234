@@ -38,6 +38,7 @@ app.use("/api/proxy-routes", createProxyRouter({ proxyStore }));
 app.use("/api/system", createSystemRouter());
 
 app.use(express.static(path.join(config.rootDir, "public")));
+app.use("/vendor", express.static(path.join(config.rootDir, "node_modules")));
 
 app.get("/", (_req, res) => {
   res.redirect("/panel.html");
@@ -65,12 +66,17 @@ app.use((req, res, next) => {
   const originalUrl = req.url;
   req.url = rewriteProxyPath(req.url, route.pathPrefix);
 
-  proxy.web(req, res, {
-    target: route.target,
-    ignorePath: false
-  }, () => {
-    req.url = originalUrl;
-  });
+  proxy.web(
+    req,
+    res,
+    {
+      target: route.target,
+      ignorePath: false
+    },
+    () => {
+      req.url = originalUrl;
+    }
+  );
 });
 
 app.use((_req, res) => {
@@ -82,10 +88,12 @@ proxy.on("error", (error, _req, res) => {
     res.writeHead(502, { "Content-Type": "application/json" });
   }
 
-  res.end(JSON.stringify({
-    error: "Proxy error",
-    details: error.message
-  }));
+  res.end(
+    JSON.stringify({
+      error: "Proxy error",
+      details: error.message
+    })
+  );
 });
 
 server.on("upgrade", (request, socket, head) => {
@@ -125,26 +133,37 @@ wsShell.on("connection", (ws, _request, url) => {
     return;
   }
 
-  const session = createShellSession(project.root);
+  let session;
 
-  ws.send(JSON.stringify({
-    type: "ready",
-    shell: session.shell,
-    cwd: project.root,
-    os: session.os
-  }));
+  try {
+    session = createShellSession(project.root, {
+      cols: url.searchParams.get("cols"),
+      rows: url.searchParams.get("rows")
+    });
+  } catch (error) {
+    ws.send(JSON.stringify({ type: "error", message: error.message || "Failed to start terminal" }));
+    ws.close();
+    return;
+  }
 
-  session.process.stdout.on("data", (chunk) => {
-    ws.send(JSON.stringify({ type: "stdout", data: String(chunk) }));
-  });
+  ws.send(
+    JSON.stringify({
+      type: "ready",
+      shell: session.shell,
+      cwd: project.root,
+      os: session.os
+    })
+  );
 
-  session.process.stderr.on("data", (chunk) => {
-    ws.send(JSON.stringify({ type: "stderr", data: String(chunk) }));
-  });
-
-  session.process.on("close", (code) => {
+  session.process.onData((data) => {
     if (ws.readyState === ws.OPEN) {
-      ws.send(JSON.stringify({ type: "exit", code }));
+      ws.send(JSON.stringify({ type: "data", data }));
+    }
+  });
+
+  session.process.onExit(({ exitCode }) => {
+    if (ws.readyState === ws.OPEN) {
+      ws.send(JSON.stringify({ type: "exit", code: exitCode }));
       ws.close();
     }
   });
@@ -154,6 +173,11 @@ wsShell.on("connection", (ws, _request, url) => {
       const message = JSON.parse(String(payload));
       if (message.type === "input") {
         session.write(String(message.data || ""));
+        return;
+      }
+
+      if (message.type === "resize") {
+        session.resize(message.cols, message.rows);
       }
     } catch {
       session.write(String(payload));

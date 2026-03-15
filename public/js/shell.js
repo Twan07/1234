@@ -1,15 +1,48 @@
 import { buildSidebar, getActiveProjectId, mountProjectPicker, requireProject, showToast } from "./shared.js";
+import { Terminal } from "https://esm.sh/@xterm/xterm@5.5.0";
+import { FitAddon } from "https://esm.sh/@xterm/addon-fit@0.10.0";
+import { WebLinksAddon } from "https://esm.sh/@xterm/addon-web-links@0.11.0";
 
 buildSidebar(window.location.pathname);
 await mountProjectPicker();
 
-const output = document.querySelector("#shell-output");
-const input = document.querySelector("#shell-input");
+const statusNode = document.querySelector("#terminal-status");
+const container = document.querySelector("#terminal");
+
+const term = new Terminal({
+  cursorBlink: true,
+  convertEol: true,
+  scrollback: 5000,
+  fontFamily: '"Cascadia Code", "JetBrains Mono", monospace',
+  fontSize: 14,
+  theme: {
+    background: "#050914"
+  }
+});
+const fitAddon = new FitAddon();
+term.loadAddon(fitAddon);
+term.loadAddon(new WebLinksAddon());
+term.open(container);
+fitAddon.fit();
+
 let socket = null;
 
-function append(text) {
-  output.textContent += text;
-  output.scrollTop = output.scrollHeight;
+function setStatus(value) {
+  statusNode.textContent = value;
+}
+
+function sendResize() {
+  if (!socket || socket.readyState !== WebSocket.OPEN) {
+    return;
+  }
+
+  socket.send(
+    JSON.stringify({
+      type: "resize",
+      cols: term.cols,
+      rows: term.rows
+    })
+  );
 }
 
 function connect() {
@@ -22,50 +55,69 @@ function connect() {
     socket.close();
   }
 
-  output.textContent = "";
+  term.clear();
+  setStatus("connecting");
+  fitAddon.fit();
+
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-  socket = new WebSocket(`${protocol}//${window.location.host}/ws/shell?projectId=${encodeURIComponent(getActiveProjectId())}`);
+  const url = new URL(`${protocol}//${window.location.host}/ws/shell`);
+  url.searchParams.set("projectId", getActiveProjectId());
+  url.searchParams.set("cols", String(term.cols || 120));
+  url.searchParams.set("rows", String(term.rows || 32));
+
+  socket = new WebSocket(url);
+
+  socket.addEventListener("open", () => {
+    setStatus("connected");
+    sendResize();
+  });
 
   socket.addEventListener("message", (event) => {
     const payload = JSON.parse(event.data);
     if (payload.type === "ready") {
-      append(`[ready] ${payload.shell} @ ${payload.cwd}\n`);
+      term.writeln(`[ready] ${payload.shell} @ ${payload.cwd}`);
+      return;
     }
-    if (payload.type === "stdout" || payload.type === "stderr") {
-      append(payload.data);
+
+    if (payload.type === "data") {
+      term.write(payload.data);
+      return;
     }
+
     if (payload.type === "error") {
-      append(`[error] ${payload.message}\n`);
+      term.writeln(`\r\n[error] ${payload.message}`);
+      setStatus("error");
+      return;
     }
+
     if (payload.type === "exit") {
-      append(`\n[exit] code=${payload.code}\n`);
+      term.writeln(`\r\n[exit] code=${payload.code}`);
+      setStatus("closed");
     }
   });
 
-  socket.addEventListener("close", () => append("\n[socket closed]\n"));
+  socket.addEventListener("close", () => {
+    setStatus("disconnected");
+  });
 }
 
-document.querySelector("#send-shell-btn").addEventListener("click", () => {
+term.onData((data) => {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
-    showToast("Shell chưa kết nối");
     return;
   }
 
-  const value = input.value;
-  if (!value.trim()) {
-    return;
-  }
-
-  socket.send(JSON.stringify({ type: "input", data: value + "\n" }));
-  input.value = "";
+  socket.send(JSON.stringify({ type: "input", data }));
 });
 
-input.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    document.querySelector("#send-shell-btn").click();
-  }
+window.addEventListener("resize", () => {
+  fitAddon.fit();
+  sendResize();
 });
 
 document.querySelector("#reconnect-shell-btn").addEventListener("click", connect);
+
+if (!getActiveProjectId()) {
+  showToast("Hãy chọn project trước");
+}
+
 connect();

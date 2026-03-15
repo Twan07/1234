@@ -1,6 +1,6 @@
 {
   "name": "mini-control-panel",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Mini control panel to create, edit, run and proxy projects",
   "type": "module",
   "main": "src/server.js",
@@ -9,8 +9,10 @@
     "start": "node src/server.js"
   },
   "dependencies": {
+    "adm-zip": "^0.5.16",
     "express": "^4.21.2",
     "http-proxy": "^1.18.1",
+    "node-pty": "^1.0.0",
     "ws": "^8.18.0"
   }
 }

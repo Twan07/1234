@@ -12,7 +12,7 @@
       <main class="main">
         <section class="hero">
           <h2>Tạo project</h2>
-          <p>Giống màn project trong exocore-web: chọn template hoặc nhập Git URL, đặt tên project rồi tạo ngay trên server.</p>
+          <p>Giờ bạn có 3 nguồn tạo project: template, Git URL và file zip. Phần zip phù hợp cho upload project có sẵn rồi bung trực tiếp lên server.</p>
         </section>
 
         <section class="grid cols-2">
@@ -27,6 +27,7 @@
               <select id="source-type">
                 <option value="template">Template</option>
                 <option value="git">Git URL</option>
+                <option value="zip">ZIP upload</option>
               </select>
             </div>
             <div id="template-box">
@@ -43,6 +44,12 @@
               <div class="field">
                 <label>Branch</label>
                 <input id="git-branch" placeholder="main">
+              </div>
+            </div>
+            <div id="zip-box" hidden>
+              <div class="upload-box">
+                <p>Chọn một file <strong>.zip</strong> để tạo project mới từ archive. Nội dung sẽ được giải nén vào thư mục project.</p>
+                <input id="zip-file" type="file" accept=".zip,application/zip,application/octet-stream">
               </div>
             </div>
             <div class="row">

@@ -12,32 +12,44 @@
       <main class="main">
         <section class="hero">
           <h2>File Manager</h2>
-          <p>Trang quản lý file kiểu manager của exocore-web: duyệt cây thư mục, mở file, sửa trực tiếp, tạo mới, đổi tên và xóa.</p>
+          <p>Trang quản lý file kiểu manager với editor nâng cấp lên CodeMirror: tô màu cú pháp, line number, dark theme và lưu nhanh bằng <strong>Ctrl/Cmd + S</strong>.</p>
         </section>
 
         <section class="split">
           <div class="list">
             <div id="project-picker"></div>
-            <div class="toolbar" style="margin-top: 16px;">
+            <div class="toolbar row" style="margin-top: 16px;">
               <button class="btn secondary" id="back-folder-btn">Lùi thư mục</button>
               <button class="btn secondary" id="refresh-files-btn">Làm mới</button>
               <button class="btn" id="new-file-btn">+ File</button>
               <button class="btn" id="new-folder-btn">+ Folder</button>
+              <label class="btn secondary" for="import-zip-input">Import ZIP</label>
+              <input id="import-zip-input" type="file" accept=".zip,application/zip,application/octet-stream" hidden>
             </div>
             <div class="tree-breadcrumb" id="current-folder-label">/</div>
             <div class="file-list" id="file-tree"></div>
           </div>
 
           <div class="editor-wrap">
-            <div class="row spread">
-              <h3 id="editor-file-label">Editor</h3>
-              <div class="row">
-                <button class="btn secondary" id="rename-item-btn">Đổi tên</button>
-                <button class="btn danger" id="delete-item-btn">Xóa</button>
-                <button class="btn primary" id="save-file-btn">Lưu file</button>
+            <div class="editor-header">
+              <div class="row spread">
+                <div>
+                  <h3 id="editor-file-label">Editor</h3>
+                  <div class="editor-path" id="editor-file-path">Chọn file bên trái để sửa...</div>
+                </div>
+                <div class="row">
+                  <button class="btn secondary" id="rename-item-btn">Đổi tên</button>
+                  <button class="btn danger" id="delete-item-btn">Xóa</button>
+                  <button class="btn secondary" id="download-file-btn">Tải file</button>
+                  <button class="btn primary" id="save-file-btn">Lưu file</button>
+                </div>
+              </div>
+              <div class="editor-meta">
+                <span class="status-chip" id="editor-lang">plain text</span>
+                <span class="status-chip" id="editor-dirty">saved</span>
               </div>
             </div>
-            <textarea id="editor" placeholder="Chọn file bên trái để sửa..."></textarea>
+            <div class="editor-surface" id="editor-surface"></div>
           </div>
         </section>
       </main>

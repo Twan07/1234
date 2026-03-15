@@ -12,7 +12,7 @@
       <main class="main">
         <section class="hero">
           <h2>Dashboard</h2>
-          <p>Màn tổng quan để chọn project, xem trạng thái chạy, hệ thống máy chủ và quản lý proxy route.</p>
+          <p>Màn tổng quan để chọn project, xem trạng thái chạy, hệ thống máy chủ, quản lý proxy route và import/export project dạng zip.</p>
         </section>
 
         <section class="grid cols-3">
@@ -39,6 +39,11 @@
               <div class="list-item"><div><strong>Source</strong><div class="muted" id="detail-source">—</div></div></div>
               <div class="list-item"><div><strong>Runtime</strong><div class="muted" id="detail-runtime">—</div></div><span class="badge idle" id="runtime-badge">idle</span></div>
             </div>
+            <div class="row" style="margin-top: 16px;">
+              <button class="btn secondary" id="export-zip-btn">Tải ZIP</button>
+              <label class="btn secondary" for="replace-zip-input">Thay bằng ZIP</label>
+              <input id="replace-zip-input" type="file" accept=".zip,application/zip,application/octet-stream" hidden>
+            </div>
           </div>
         </section>
 
@@ -53,10 +58,10 @@
 
           <div class="panel">
             <h3>Đi nhanh</h3>
-            <div class="grid">
-              <a class="list-item" id="go-manager" href="/manager.html"><div><strong>File Manager</strong><div class="muted">Sửa file của project đã chọn</div></div></a>
+            <div class="quick-actions">
+              <a class="list-item" id="go-manager" href="/manager.html"><div><strong>File Manager</strong><div class="muted">CodeMirror editor + file manager</div></div></a>
               <a class="list-item" id="go-console" href="/console.html"><div><strong>Logs & Runner</strong><div class="muted">Chạy app và xem log</div></div></a>
-              <a class="list-item" id="go-shell" href="/shell.html"><div><strong>Shell</strong><div class="muted">Mở terminal trong thư mục project</div></div></a>
+              <a class="list-item" id="go-shell" href="/shell.html"><div><strong>Shell</strong><div class="muted">TTY terminal bằng xterm.js + node-pty</div></div></a>
             </div>
           </div>
         </section>

@@ -1,5 +1,5 @@
-import { spawn } from "node:child_process";
 import os from "node:os";
+import * as pty from "node-pty";
 
 function getShellExecutable() {
   if (process.platform === "win32") {
@@ -13,28 +13,35 @@ function getShellExecutable() {
   return "/bin/bash";
 }
 
-export function createShellSession(cwd) {
+export function createShellSession(cwd, options = {}) {
   const shell = getShellExecutable();
-  const child = spawn(shell, [], {
+  const cols = Number(options.cols) > 0 ? Number(options.cols) : 120;
+  const rows = Number(options.rows) > 0 ? Number(options.rows) : 32;
+  const processRef = pty.spawn(shell, [], {
+    name: "xterm-256color",
+    cols,
+    rows,
     cwd,
     env: {
       ...process.env,
-      TERM: process.env.TERM || "xterm-256color"
-    },
-    stdio: ["pipe", "pipe", "pipe"]
+      TERM: "xterm-256color"
+    }
   });
 
   return {
     os: os.platform(),
     shell,
-    process: child,
+    process: processRef,
     write(data) {
-      child.stdin.write(data);
+      processRef.write(String(data || ""));
+    },
+    resize(nextCols, nextRows) {
+      const safeCols = Math.max(20, Number(nextCols) || cols);
+      const safeRows = Math.max(5, Number(nextRows) || rows);
+      processRef.resize(safeCols, safeRows);
     },
     close() {
-      if (!child.killed) {
-        child.kill("SIGTERM");
-      }
+      processRef.kill();
     }
   };
 }

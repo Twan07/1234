@@ -51,6 +51,16 @@ export async function copyDir(sourceDir, targetDir) {
   }
 }
 
+export async function emptyDir(dirPath) {
+  await ensureDir(dirPath);
+  const entries = await fsp.readdir(dirPath, { withFileTypes: true });
+
+  await Promise.all(entries.map(async (entry) => {
+    const fullPath = path.join(dirPath, entry.name);
+    await fsp.rm(fullPath, { recursive: true, force: true });
+  }));
+}
+
 export async function removeDir(dirPath) {
   await fsp.rm(dirPath, { recursive: true, force: true });
 }

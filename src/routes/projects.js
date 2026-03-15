@@ -1,11 +1,26 @@
 import express from "express";
 import path from "node:path";
 import fs from "node:fs/promises";
+import { exportProjectZip, importProjectZip } from "../lib/zip.js";
 import { listDir } from "../lib/fs.js";
 import { safeResolve } from "../lib/security.js";
 
 function normalizeRelative(target) {
   return String(target || "").replaceAll("\\", "/").replace(/^\/+/, "");
+}
+
+function validateProjectName(name, projectsStore) {
+  if (!name) {
+    throw new Error("Project name is required");
+  }
+
+  if (!projectsStore.isValidName(name)) {
+    throw new Error("Project name chỉ được chứa chữ, số, dấu chấm, gạch dưới và gạch ngang");
+  }
+
+  if (projectsStore.getByName(name)) {
+    throw new Error("Project name already exists");
+  }
 }
 
 export function createProjectsRouter({ projectsStore, processManager }) {
@@ -27,20 +42,7 @@ export function createProjectsRouter({ projectsStore, processManager }) {
       const gitUrl = String(req.body.gitUrl || "").trim();
       const branch = String(req.body.branch || "").trim() || undefined;
 
-      if (!name) {
-        res.status(400).json({ error: "Project name is required" });
-        return;
-      }
-
-      if (!/^[a-zA-Z0-9._-]+$/.test(name)) {
-        res.status(400).json({ error: "Project name chỉ được chứa chữ, số, dấu chấm, gạch dưới và gạch ngang" });
-        return;
-      }
-
-      if (projectsStore.list().some((item) => item.name === name)) {
-        res.status(409).json({ error: "Project name already exists" });
-        return;
-      }
+      validateProjectName(name, projectsStore);
 
       let project;
 
@@ -57,9 +59,36 @@ export function createProjectsRouter({ projectsStore, processManager }) {
 
       res.status(201).json({ project });
     } catch (error) {
-      res.status(500).json({ error: error.message || "Failed to create project" });
+      const statusCode = String(error.message || "").includes("Project name") ? 400 : 500;
+      res.status(statusCode).json({ error: error.message || "Failed to create project" });
     }
   });
+
+  router.post(
+    "/create-from-zip",
+    express.raw({ type: ["application/zip", "application/octet-stream"], limit: "300mb" }),
+    async (req, res) => {
+      try {
+        const name = String(req.query.name || req.headers["x-project-name"] || "").trim();
+        validateProjectName(name, projectsStore);
+
+        if (!req.body || req.body.length === 0) {
+          res.status(400).json({ error: "Zip file is required" });
+          return;
+        }
+
+        const project = await projectsStore.createFromZip({
+          name,
+          buffer: Buffer.from(req.body)
+        });
+
+        res.status(201).json({ project });
+      } catch (error) {
+        const statusCode = String(error.message || "").includes("Project name") || String(error.message || "").includes("Zip") ? 400 : 500;
+        res.status(statusCode).json({ error: error.message || "Failed to create project from zip" });
+      }
+    }
+  );
 
   router.get("/:id", async (req, res) => {
     const project = projectsStore.getById(req.params.id);
@@ -104,6 +133,49 @@ export function createProjectsRouter({ projectsStore, processManager }) {
       res.status(500).json({ error: error.message || "Failed to remove project" });
     }
   });
+
+  router.get("/:id/export-zip", async (req, res) => {
+    try {
+      const project = projectsStore.getById(req.params.id);
+      if (!project) {
+        res.status(404).json({ error: "Project not found" });
+        return;
+      }
+
+      const buffer = await exportProjectZip(project.root);
+      res.setHeader("Content-Type", "application/zip");
+      res.setHeader("Content-Disposition", `attachment; filename="${project.name}.zip"`);
+      res.send(buffer);
+    } catch (error) {
+      res.status(500).json({ error: error.message || "Failed to export zip" });
+    }
+  });
+
+  router.post(
+    "/:id/import-zip",
+    express.raw({ type: ["application/zip", "application/octet-stream"], limit: "300mb" }),
+    async (req, res) => {
+      try {
+        const project = projectsStore.getById(req.params.id);
+        if (!project) {
+          res.status(404).json({ error: "Project not found" });
+          return;
+        }
+
+        if (!req.body || req.body.length === 0) {
+          res.status(400).json({ error: "Zip file is required" });
+          return;
+        }
+
+        processManager.stop(project.id);
+        const replace = String(req.query.replace || "1") !== "0";
+        await importProjectZip(Buffer.from(req.body), project.root, { replace });
+        res.json({ ok: true, replaced: replace });
+      } catch (error) {
+        res.status(500).json({ error: error.message || "Failed to import zip" });
+      }
+    }
+  );
 
   router.get("/:id/tree", async (req, res) => {
     try {

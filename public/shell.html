@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Shell</title>
     <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.css">
   </head>
   <body>
     <div class="layout">
@@ -12,19 +13,16 @@
       <main class="main">
         <section class="hero">
           <h2>Shell</h2>
-          <p>Terminal realtime theo từng project bằng WebSocket. Bản này là stream stdin/stdout, phù hợp cho lệnh thông thường và debug nhanh.</p>
+          <p>Terminal realtime theo từng project bằng <strong>xterm.js</strong> ở frontend và <strong>node-pty</strong> ở backend, nên tương tác chuẩn TTY hơn kiểu stream stdin/stdout đơn giản trước đó.</p>
         </section>
 
         <section class="console">
           <div id="project-picker"></div>
-          <div class="toolbar" style="margin-top: 16px;">
+          <div class="row" style="margin-top: 16px; margin-bottom: 16px;">
             <button class="btn secondary" id="reconnect-shell-btn">Kết nối lại</button>
+            <span class="status-chip" id="terminal-status">disconnected</span>
           </div>
-          <pre class="terminal" id="shell-output"></pre>
-          <div class="row" style="margin-top: 12px;">
-            <input id="shell-input" placeholder="Nhập lệnh, ví dụ: ls -la hoặc npm install">
-            <button class="btn primary" id="send-shell-btn">Gửi</button>
-          </div>
+          <div class="terminal-shell" id="terminal"></div>
         </section>
       </main>
     </div>

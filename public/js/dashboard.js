@@ -15,6 +15,7 @@ await mountProjectPicker();
 
 const projectsList = document.querySelector("#projects-list");
 const runtimeBadge = document.querySelector("#runtime-badge");
+const replaceZipInput = document.querySelector("#replace-zip-input");
 
 function renderProjects(projects) {
   const activeProjectId = getActiveProjectId();
@@ -24,15 +25,19 @@ function renderProjects(projects) {
     return;
   }
 
-  projectsList.innerHTML = projects.map((project) => `
-    <button class="list-item ${project.id === activeProjectId ? "active" : ""}" data-project-id="${project.id}">
-      <div>
-        <strong>${project.name}</strong>
-        <div class="muted">${project.sourceType}: ${project.source}</div>
-      </div>
-      <span class="badge">Open</span>
-    </button>
-  `).join("");
+  projectsList.innerHTML = projects
+    .map(
+      (project) => `
+        <button class="list-item ${project.id === activeProjectId ? "active" : ""}" data-project-id="${project.id}">
+          <div>
+            <strong>${project.name}</strong>
+            <div class="muted">${project.sourceType}: ${project.source}</div>
+          </div>
+          <span class="badge">Open</span>
+        </button>
+      `
+    )
+    .join("");
 
   for (const button of projectsList.querySelectorAll("[data-project-id]")) {
     button.addEventListener("click", () => {
@@ -56,6 +61,8 @@ async function renderProjectDetails() {
     document.querySelector("#detail-root").textContent = "—";
     document.querySelector("#detail-source").textContent = "—";
     document.querySelector("#detail-runtime").textContent = "—";
+    runtimeBadge.textContent = "idle";
+    runtimeBadge.className = "badge idle";
     return;
   }
 
@@ -80,15 +87,19 @@ async function renderProxyRoutes() {
     return;
   }
 
-  list.innerHTML = data.routes.map((route) => `
-    <div class="list-item">
-      <div>
-        <strong>${route.pathPrefix}</strong>
-        <div class="muted">${route.target}</div>
-      </div>
-      <button class="btn danger" data-route-id="${route.id}">Xóa</button>
-    </div>
-  `).join("");
+  list.innerHTML = data.routes
+    .map(
+      (route) => `
+        <div class="list-item">
+          <div>
+            <strong>${route.pathPrefix}</strong>
+            <div class="muted">${route.target}</div>
+          </div>
+          <button class="btn danger" data-route-id="${route.id}">Xóa</button>
+        </div>
+      `
+    )
+    .join("");
 
   for (const button of list.querySelectorAll("[data-route-id]")) {
     button.addEventListener("click", async () => {
@@ -116,6 +127,53 @@ document.querySelector("#create-proxy-btn").addEventListener("click", async () =
     await renderProxyRoutes();
   } catch (error) {
     showToast(error.message);
+  }
+});
+
+document.querySelector("#export-zip-btn").addEventListener("click", () => {
+  const projectId = getActiveProjectId();
+  if (!projectId) {
+    showToast("Hãy chọn project trước");
+    return;
+  }
+
+  window.location.href = `/api/projects/${encodeURIComponent(projectId)}/export-zip`;
+});
+
+replaceZipInput.addEventListener("change", async () => {
+  const projectId = getActiveProjectId();
+  const file = replaceZipInput.files?.[0];
+
+  if (!projectId) {
+    showToast("Hãy chọn project trước");
+    replaceZipInput.value = "";
+    return;
+  }
+
+  if (!file) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/projects/${encodeURIComponent(projectId)}/import-zip?replace=1`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/zip"
+      },
+      body: await file.arrayBuffer()
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || `HTTP ${response.status}`);
+    }
+
+    showToast("Đã thay project bằng file zip");
+    await renderProjectDetails();
+  } catch (error) {
+    showToast(error.message);
+  } finally {
+    replaceZipInput.value = "";
   }
 });
 

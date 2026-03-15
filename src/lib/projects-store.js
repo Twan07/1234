@@ -4,6 +4,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { config } from "../config.js";
 import { copyDir, ensureDir, ensureJsonFile, readJson, removeDir, writeJson } from "./fs.js";
+import { importProjectZip } from "./zip.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -24,6 +25,14 @@ export class ProjectsStore {
 
   getById(projectId) {
     return this.projects.find((item) => item.id === projectId) || null;
+  }
+
+  getByName(name) {
+    return this.projects.find((item) => item.name === name) || null;
+  }
+
+  isValidName(name) {
+    return /^[a-zA-Z0-9._-]+$/.test(name);
   }
 
   getTemplates() {
@@ -53,21 +62,30 @@ export class ProjectsStore {
     await writeJson(config.projectStateFile, this.projects);
   }
 
+  createRecord({ name, root, sourceType, source, branch = null }) {
+    return {
+      id: randomUUID(),
+      name,
+      root,
+      sourceType,
+      source,
+      branch,
+      createdAt: new Date().toISOString()
+    };
+  }
+
   async createFromTemplate({ name, templateName }) {
-    const id = randomUUID();
     const root = path.join(config.projectsDir, name);
     const templateRoot = path.join(config.templatesDir, templateName);
 
     await copyDir(templateRoot, root);
 
-    const project = {
-      id,
+    const project = this.createRecord({
       name,
       root,
       sourceType: "template",
-      source: templateName,
-      createdAt: new Date().toISOString()
-    };
+      source: templateName
+    });
 
     this.projects.push(project);
     await this.save();
@@ -75,7 +93,6 @@ export class ProjectsStore {
   }
 
   async createFromGit({ name, gitUrl, branch }) {
-    const id = randomUUID();
     const root = path.join(config.projectsDir, name);
     const args = ["clone"];
 
@@ -89,15 +106,30 @@ export class ProjectsStore {
       cwd: config.rootDir
     });
 
-    const project = {
-      id,
+    const project = this.createRecord({
       name,
       root,
       sourceType: "git",
       source: gitUrl,
-      branch: branch || null,
-      createdAt: new Date().toISOString()
-    };
+      branch: branch || null
+    });
+
+    this.projects.push(project);
+    await this.save();
+    return project;
+  }
+
+  async createFromZip({ name, buffer }) {
+    const root = path.join(config.projectsDir, name);
+    await ensureDir(root);
+    await importProjectZip(buffer, root, { replace: true });
+
+    const project = this.createRecord({
+      name,
+      root,
+      sourceType: "zip",
+      source: `${name}.zip`
+    });
 
     this.projects.push(project);
     await this.save();
