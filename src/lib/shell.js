@@ -1,4 +1,5 @@
 import os from "node:os";
+import path from "node:path";
 import * as pty from "node-pty";
 
 function getShellExecutable() {
@@ -13,10 +14,29 @@ function getShellExecutable() {
   return "/bin/bash";
 }
 
+function escapeSingleQuotes(value) {
+  return String(value || "").replace(/'/g, "'\\''");
+}
+
+function applyProjectPrompt(processRef, projectName) {
+  const safeName = String(projectName || "project").trim() || "project";
+
+  if (process.platform === "win32") {
+    processRef.write(`function prompt { \"${safeName}> \" }\r`);
+    return;
+  }
+
+  const escapedName = escapeSingleQuotes(safeName);
+  processRef.write(`unset PROMPT_COMMAND\r`);
+  processRef.write(`export PS1='${escapedName} $ '\r`);
+  processRef.write(`PROMPT='${escapedName} $ '\r`);
+}
+
 export function createShellSession(cwd, options = {}) {
   const shell = getShellExecutable();
   const cols = Number(options.cols) > 0 ? Number(options.cols) : 120;
   const rows = Number(options.rows) > 0 ? Number(options.rows) : 32;
+  const projectName = String(options.projectName || path.basename(cwd) || "project");
   const processRef = pty.spawn(shell, [], {
     name: "xterm-256color",
     cols,
@@ -24,9 +44,12 @@ export function createShellSession(cwd, options = {}) {
     cwd,
     env: {
       ...process.env,
-      TERM: "xterm-256color"
+      TERM: "xterm-256color",
+      PS1: `${projectName} $ `
     }
   });
+
+  applyProjectPrompt(processRef, projectName);
 
   return {
     os: os.platform(),

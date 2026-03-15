@@ -138,7 +138,8 @@ wsShell.on("connection", (ws, _request, url) => {
   try {
     session = createShellSession(project.root, {
       cols: url.searchParams.get("cols"),
-      rows: url.searchParams.get("rows")
+      rows: url.searchParams.get("rows"),
+      projectName: project.name
     });
   } catch (error) {
     ws.send(JSON.stringify({ type: "error", message: error.message || "Failed to start terminal" }));
