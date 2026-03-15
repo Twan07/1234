@@ -1,19 +1,30 @@
-# Mini Control Panel
+# Mini Exocore-Style Panel
 
-Một repo mẫu kiểu control panel mini để:
+Repo mẫu kiểu **mini control panel** lấy cảm hứng từ `Twan07/exocore-web`, tập trung vào các chức năng chính:
 
-- tạo project từ `git` hoặc `template`
+- tạo project từ **git** hoặc **template**
 - sửa file trực tiếp trên web
-- mở shell theo từng project
-- chạy app và xem log realtime
-- proxy route ra ngoài
+- mở **shell** theo từng project
+- chạy app và xem **log realtime**
+- tạo **proxy route** để publish app/service ra ngoài
+
+## Điểm giống hướng exocore-web
+
+Bản này bám theo kiểu panel nhiều màn thay vì một trang duy nhất:
+
+- `panel.html`: trang tổng quan
+- `project.html`: tạo project
+- `dashboard.html`: project overview + proxy + system info
+- `manager.html`: file manager + editor
+- `shell.html`: terminal theo project
+- `console.html`: run app + logs realtime
 
 ## Stack
 
 - Node.js + Express
-- WebSocket (`ws`) cho shell và log realtime
-- `http-proxy` để route traffic ra app/service khác
-- Frontend thuần HTML/CSS/JS để dễ sửa
+- WebSocket (`ws`) cho shell và logs realtime
+- `http-proxy` cho reverse proxy
+- Frontend thuần HTML/CSS/JS để dễ sửa và dễ tự host
 
 ## Chạy nhanh
 
@@ -22,10 +33,16 @@ npm install
 npm run start
 ```
 
-Mặc định web panel chạy ở:
+Mặc định panel chạy ở:
 
 ```bash
 http://localhost:3000
+```
+
+Trang mở đầu:
+
+```bash
+http://localhost:3000/panel.html
 ```
 
 ## Cấu trúc
@@ -35,63 +52,35 @@ src/
   lib/
   routes/
 public/
+  js/
 templates/
 runtime/
 projects/
 ```
-
-## Tính năng hiện có
-
-### 1) Tạo project
-
-- từ Git URL bằng `git clone`
-- từ template có sẵn:
-  - `blank`
-  - `static-site`
-  - `node-api`
-
-### 2) Sửa file trên web
-
-- xem tree thư mục
-- đọc file
-- lưu file
-- chặn path traversal
-
-### 3) Shell
-
-- shell theo project qua WebSocket
-- dùng `/bin/bash`, `/bin/sh`, `powershell.exe` hoặc `cmd.exe` tùy hệ điều hành
-
-> Bản này là shell dạng stream stdin/stdout, đủ cho đa số lệnh dòng lệnh. Nếu bạn muốn TTY đầy đủ cho ứng dụng kiểu `htop`, `vim`, `nano`, có thể nâng cấp sang `node-pty` + terminal frontend.
-
-### 4) Run app + log
-
-- chạy 1 process cho mỗi project
-- dừng/restart project
-- xem log realtime
-- giữ log gần nhất trong memory
-
-### 5) Proxy route
-
-- map `pathPrefix -> target`
-- ví dụ `/apps/demo` -> `http://127.0.0.1:5173`
-- giữ nguyên stream response
 
 ## API chính
 
 ### Projects
 
 - `GET /api/projects`
+- `GET /api/projects/templates`
 - `POST /api/projects/create`
+- `GET /api/projects/:id`
+- `DELETE /api/projects/:id`
 - `GET /api/projects/:id/tree?path=`
 - `GET /api/projects/:id/file?path=`
 - `PUT /api/projects/:id/file`
+- `POST /api/projects/:id/fs/create`
+- `POST /api/projects/:id/fs/rename`
+- `DELETE /api/projects/:id/fs/item?path=`
 
 ### Runtime
 
-- `POST /api/projects/:id/run`
-- `POST /api/projects/:id/stop`
-- `GET /api/projects/:id/logs`
+- `POST /api/runtime/:id/run`
+- `POST /api/runtime/:id/stop`
+- `GET /api/runtime/:id/logs`
+- `WS /ws/logs?projectId=...`
+- `WS /ws/shell?projectId=...`
 
 ### Proxy
 
@@ -99,21 +88,32 @@ projects/
 - `POST /api/proxy-routes`
 - `DELETE /api/proxy-routes/:id`
 
+### System
+
+- `GET /api/system`
+
+## Templates có sẵn
+
+- `blank`
+- `static-site`
+- `node-api`
+
 ## Ví dụ workflow
 
-1. Tạo project từ template `node-api`
-2. Mở file `package.json` và `server.js` để sửa
-3. Bấm Run với lệnh `npm install && npm start`
-4. Xem log ở tab Logs
-5. Tạo proxy route:
+1. Vào `project.html`
+2. Tạo project từ template `node-api`
+3. Sang `manager.html` để sửa `package.json` hoặc `server.js`
+4. Sang `console.html` chạy `npm install && npm start`
+5. Xem log realtime
+6. Tạo proxy route:
    - prefix: `/apps/api`
    - target: `http://127.0.0.1:4010`
-6. Truy cập:
+7. Truy cập app qua:
    - `http://localhost:3000/apps/api`
 
 ## Lưu ý bảo mật
 
-Repo này đang hướng tới self-host / dùng cá nhân trên VPS nội bộ, nên chưa có:
+Repo này hướng tới self-host / dùng cá nhân trên VPS hoặc máy riêng. Nó **chưa** có:
 
 - auth/login
 - sandbox process
@@ -121,12 +121,24 @@ Repo này đang hướng tới self-host / dùng cá nhân trên VPS nội bộ,
 - ACL file system
 - audit log
 
-Nếu bạn muốn đem ra internet công khai, nên thêm ít nhất:
+Nếu bạn muốn public ra internet, nên thêm ít nhất:
 
 - đăng nhập + session
-- allowlist thư mục
 - rate limit
+- allowlist thư mục
 - tách runner vào worker riêng
-- giới hạn command shell
-- reverse proxy ngoài bằng Nginx/Caddy
+- reverse proxy ngoài bằng Nginx hoặc Caddy
 
+## Khác với exocore-web ở chỗ nào?
+
+- không dùng hardcoded credential
+- không có các màn auth/profile/plans
+- code gọn hơn để dễ sửa tiếp
+- không dùng CodeMirror hay SolidJS, thay bằng frontend thuần
+
+Nếu muốn, có thể nâng cấp tiếp sang:
+
+- Monaco editor / CodeMirror
+- `node-pty` cho terminal chuẩn TTY
+- upload/download file hoặc zip project
+- process auto-restart kiểu PM2 mini

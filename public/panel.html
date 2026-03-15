@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mini Exocore Panel</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar" id="sidebar"></aside>
+      <main class="main">
+        <section class="hero">
+          <h2>Mini control panel kiểu exocore-web</h2>
+          <p>Tạo project từ git hoặc template, sửa file trực tiếp trên web, mở shell, chạy app xem log realtime và map proxy route ra ngoài. Bản này giữ tinh thần panel nhiều màn như exocore-web nhưng đơn giản hơn để dễ tự sửa và tự host.</p>
+        </section>
+
+        <section class="grid cols-3">
+          <div class="card kpi">
+            <div class="label">Màn hình chính</div>
+            <div class="value">6</div>
+            <div class="muted">Panel, Project, Dashboard, Manager, Shell, Console</div>
+          </div>
+          <div class="card kpi">
+            <div class="label">Chức năng cốt lõi</div>
+            <div class="value">5</div>
+            <div class="muted">Create, Edit, Shell, Run/Logs, Proxy</div>
+          </div>
+          <div class="card kpi">
+            <div class="label">Trạng thái</div>
+            <div class="value" id="project-count">0</div>
+            <div class="muted">Project đang được quản lý</div>
+          </div>
+        </section>
+
+        <section class="grid cols-2" style="margin-top: 18px;">
+          <div class="list">
+            <div class="row spread">
+              <h3>Project gần đây</h3>
+              <a class="btn primary" href="/project.html">Tạo project</a>
+            </div>
+            <div class="project-list" id="recent-projects"></div>
+          </div>
+          <div class="panel">
+            <h3>Workflow gợi ý</h3>
+            <div class="grid">
+              <div class="list-item"><div><strong>1. Create</strong><div class="muted">Tạo từ template hoặc clone git</div></div></div>
+              <div class="list-item"><div><strong>2. Manager</strong><div class="muted">Tạo file/folder, mở file, sửa và lưu</div></div></div>
+              <div class="list-item"><div><strong>3. Console</strong><div class="muted">Chạy lệnh app và xem log realtime</div></div></div>
+              <div class="list-item"><div><strong>4. Shell</strong><div class="muted">Mở terminal trong thư mục project</div></div></div>
+              <div class="list-item"><div><strong>5. Proxy</strong><div class="muted">Map prefix như /apps/demo ra target port</div></div></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script type="module" src="/js/panel.js"></script>
+  </body>
+</html>

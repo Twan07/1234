@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Shell</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar" id="sidebar"></aside>
+      <main class="main">
+        <section class="hero">
+          <h2>Shell</h2>
+          <p>Terminal realtime theo từng project bằng WebSocket. Bản này là stream stdin/stdout, phù hợp cho lệnh thông thường và debug nhanh.</p>
+        </section>
+
+        <section class="console">
+          <div id="project-picker"></div>
+          <div class="toolbar" style="margin-top: 16px;">
+            <button class="btn secondary" id="reconnect-shell-btn">Kết nối lại</button>
+          </div>
+          <pre class="terminal" id="shell-output"></pre>
+          <div class="row" style="margin-top: 12px;">
+            <input id="shell-input" placeholder="Nhập lệnh, ví dụ: ls -la hoặc npm install">
+            <button class="btn primary" id="send-shell-btn">Gửi</button>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script type="module" src="/js/shell.js"></script>
+  </body>
+</html>

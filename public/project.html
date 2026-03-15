@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Create Project</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar" id="sidebar"></aside>
+      <main class="main">
+        <section class="hero">
+          <h2>Tạo project</h2>
+          <p>Giống màn project trong exocore-web: chọn template hoặc nhập Git URL, đặt tên project rồi tạo ngay trên server.</p>
+        </section>
+
+        <section class="grid cols-2">
+          <div class="panel">
+            <h3>Nguồn project</h3>
+            <div class="field">
+              <label>Tên project</label>
+              <input id="project-name" placeholder="my-app">
+            </div>
+            <div class="field">
+              <label>Source type</label>
+              <select id="source-type">
+                <option value="template">Template</option>
+                <option value="git">Git URL</option>
+              </select>
+            </div>
+            <div id="template-box">
+              <div class="field">
+                <label>Template</label>
+                <select id="template-name"></select>
+              </div>
+            </div>
+            <div id="git-box" hidden>
+              <div class="field">
+                <label>Git URL</label>
+                <input id="git-url" placeholder="https://github.com/user/repo.git">
+              </div>
+              <div class="field">
+                <label>Branch</label>
+                <input id="git-branch" placeholder="main">
+              </div>
+            </div>
+            <div class="row">
+              <button class="btn primary" id="create-project-btn">Tạo project</button>
+              <a class="btn secondary" href="/dashboard.html">Sang dashboard</a>
+            </div>
+          </div>
+
+          <div class="list">
+            <h3>Template có sẵn</h3>
+            <div class="project-list" id="template-list"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script type="module" src="/js/project.js"></script>
+  </body>
+</html>

@@ -11,6 +11,7 @@ import { createShellSession } from "./lib/shell.js";
 import { createProjectsRouter } from "./routes/projects.js";
 import { createRuntimeRouter } from "./routes/runtime.js";
 import { createProxyRouter } from "./routes/proxy.js";
+import { createSystemRouter } from "./routes/system.js";
 
 const projectsStore = new ProjectsStore();
 const proxyStore = new ProxyStore();
@@ -31,12 +32,16 @@ const proxy = httpProxy.createProxyServer({
 });
 
 app.use(express.json({ limit: "2mb" }));
-app.use("/api/projects", createProjectsRouter({ projectsStore }));
+app.use("/api/projects", createProjectsRouter({ projectsStore, processManager }));
 app.use("/api/runtime", createRuntimeRouter({ projectsStore, processManager }));
 app.use("/api/proxy-routes", createProxyRouter({ proxyStore }));
+app.use("/api/system", createSystemRouter());
 
-app.use("/vendor", express.static(path.join(config.rootDir, "public", "vendor")));
 app.use(express.static(path.join(config.rootDir, "public")));
+
+app.get("/", (_req, res) => {
+  res.redirect("/panel.html");
+});
 
 function rewriteProxyPath(requestPath, pathPrefix) {
   if (requestPath === pathPrefix) {
@@ -149,9 +154,6 @@ wsShell.on("connection", (ws, _request, url) => {
       const message = JSON.parse(String(payload));
       if (message.type === "input") {
         session.write(String(message.data || ""));
-      }
-      if (message.type === "resize") {
-        // reserved for future node-pty upgrade
       }
     } catch {
       session.write(String(payload));

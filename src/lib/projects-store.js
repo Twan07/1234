@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { config } from "../config.js";
-import { copyDir, ensureDir, ensureJsonFile, readJson, writeJson } from "./fs.js";
+import { copyDir, ensureDir, ensureJsonFile, readJson, removeDir, writeJson } from "./fs.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -24,6 +24,29 @@ export class ProjectsStore {
 
   getById(projectId) {
     return this.projects.find((item) => item.id === projectId) || null;
+  }
+
+  getTemplates() {
+    return [
+      {
+        id: "blank",
+        name: "Blank",
+        description: "Thư mục rỗng để tự bắt đầu từ đầu",
+        git: null
+      },
+      {
+        id: "static-site",
+        name: "Static Site",
+        description: "Mẫu HTML/CSS/JS tĩnh chạy ngay sau khi tạo",
+        git: null
+      },
+      {
+        id: "node-api",
+        name: "Node API",
+        description: "Express API nhỏ có sẵn package.json và server.js",
+        git: null
+      }
+    ];
   }
 
   async save() {
@@ -79,5 +102,17 @@ export class ProjectsStore {
     this.projects.push(project);
     await this.save();
     return project;
+  }
+
+  async remove(projectId) {
+    const project = this.getById(projectId);
+    if (!project) {
+      return false;
+    }
+
+    await removeDir(project.root);
+    this.projects = this.projects.filter((item) => item.id !== projectId);
+    await this.save();
+    return true;
   }
 }

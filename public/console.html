@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Logs & Runner</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar" id="sidebar"></aside>
+      <main class="main">
+        <section class="hero">
+          <h2>Logs & Runner</h2>
+          <p>Chạy app, dừng app và xem log realtime giống phần console / dashboard runtime của panel quản lý project.</p>
+        </section>
+
+        <section class="grid cols-2">
+          <div class="panel">
+            <div id="project-picker"></div>
+            <div class="field" style="margin-top: 16px;">
+              <label>Lệnh chạy</label>
+              <input id="run-command" placeholder="npm install && npm start">
+            </div>
+            <div class="row">
+              <button class="btn success" id="run-btn">Run</button>
+              <button class="btn danger" id="stop-btn">Stop</button>
+            </div>
+            <div class="row" style="margin-top: 14px;">
+              <span class="badge idle" id="run-status">idle</span>
+              <span class="muted" id="run-detail">Chưa có process</span>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Mẹo</h3>
+            <div class="grid">
+              <div class="list-item"><div><strong>Node project</strong><div class="muted">npm install && npm start</div></div></div>
+              <div class="list-item"><div><strong>Python app</strong><div class="muted">python app.py</div></div></div>
+              <div class="list-item"><div><strong>Static file server</strong><div class="muted">python -m http.server 8080</div></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="console" style="margin-top: 18px;">
+          <div class="row spread">
+            <h3>Realtime logs</h3>
+            <button class="btn secondary" id="clear-logs-btn">Xóa vùng hiển thị</button>
+          </div>
+          <pre class="logs" id="logs-output"></pre>
+        </section>
+      </main>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script type="module" src="/js/console.js"></script>
+  </body>
+</html>

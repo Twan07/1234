@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar" id="sidebar"></aside>
+      <main class="main">
+        <section class="hero">
+          <h2>Dashboard</h2>
+          <p>Màn tổng quan để chọn project, xem trạng thái chạy, hệ thống máy chủ và quản lý proxy route.</p>
+        </section>
+
+        <section class="grid cols-3">
+          <div class="card kpi"><div class="label">Hostname</div><div class="value" id="hostname">—</div><div class="muted">Máy chủ hiện tại</div></div>
+          <div class="card kpi"><div class="label">Node.js</div><div class="value" id="node-version">—</div><div class="muted">Runtime panel</div></div>
+          <div class="card kpi"><div class="label">Uptime</div><div class="value" id="uptime">—</div><div class="muted">Thời gian máy đang chạy</div></div>
+        </section>
+
+        <section class="grid cols-2" style="margin-top: 18px;">
+          <div class="list">
+            <div class="row spread">
+              <h3>Projects</h3>
+              <a class="btn primary" href="/project.html">+ New</a>
+            </div>
+            <div class="project-list" id="projects-list"></div>
+          </div>
+
+          <div class="panel">
+            <h3>Thông tin project</h3>
+            <div id="project-picker"></div>
+            <div class="grid" style="margin-top: 16px;">
+              <div class="list-item"><div><strong>Tên</strong><div class="muted" id="detail-name">—</div></div></div>
+              <div class="list-item"><div><strong>Root</strong><div class="muted" id="detail-root">—</div></div></div>
+              <div class="list-item"><div><strong>Source</strong><div class="muted" id="detail-source">—</div></div></div>
+              <div class="list-item"><div><strong>Runtime</strong><div class="muted" id="detail-runtime">—</div></div><span class="badge idle" id="runtime-badge">idle</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="grid cols-2" style="margin-top: 18px;">
+          <div class="panel">
+            <div class="row spread"><h3>Proxy routes</h3><span class="hint">Prefix sẽ bị strip trước khi forward</span></div>
+            <div class="field"><label>Path prefix</label><input id="proxy-prefix" placeholder="/apps/demo"></div>
+            <div class="field"><label>Target</label><input id="proxy-target" placeholder="http://127.0.0.1:4010"></div>
+            <div class="row"><button class="btn primary" id="create-proxy-btn">Tạo proxy</button></div>
+            <div class="proxy-list" id="proxy-list" style="margin-top: 14px;"></div>
+          </div>
+
+          <div class="panel">
+            <h3>Đi nhanh</h3>
+            <div class="grid">
+              <a class="list-item" id="go-manager" href="/manager.html"><div><strong>File Manager</strong><div class="muted">Sửa file của project đã chọn</div></div></a>
+              <a class="list-item" id="go-console" href="/console.html"><div><strong>Logs & Runner</strong><div class="muted">Chạy app và xem log</div></div></a>
+              <a class="list-item" id="go-shell" href="/shell.html"><div><strong>Shell</strong><div class="muted">Mở terminal trong thư mục project</div></div></a>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script type="module" src="/js/dashboard.js"></script>
+  </body>
+</html>

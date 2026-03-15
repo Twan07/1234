@@ -51,11 +51,15 @@ export async function copyDir(sourceDir, targetDir) {
   }
 }
 
+export async function removeDir(dirPath) {
+  await fsp.rm(dirPath, { recursive: true, force: true });
+}
+
 export async function listDir(dirPath) {
   const entries = await fsp.readdir(dirPath, { withFileTypes: true });
   const items = [];
 
-  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+  for (const entry of entries) {
     if (entry.name === "node_modules" || entry.name === ".git") {
       continue;
     }
@@ -70,6 +74,14 @@ export async function listDir(dirPath) {
       mtimeMs: stat.mtimeMs
     });
   }
+
+  items.sort((a, b) => {
+    if (a.type !== b.type) {
+      return a.type === "directory" ? -1 : 1;
+    }
+
+    return a.name.localeCompare(b.name);
+  });
 
   return items;
 }

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>File Manager</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar" id="sidebar"></aside>
+      <main class="main">
+        <section class="hero">
+          <h2>File Manager</h2>
+          <p>Trang quản lý file kiểu manager của exocore-web: duyệt cây thư mục, mở file, sửa trực tiếp, tạo mới, đổi tên và xóa.</p>
+        </section>
+
+        <section class="split">
+          <div class="list">
+            <div id="project-picker"></div>
+            <div class="toolbar" style="margin-top: 16px;">
+              <button class="btn secondary" id="back-folder-btn">Lùi thư mục</button>
+              <button class="btn secondary" id="refresh-files-btn">Làm mới</button>
+              <button class="btn" id="new-file-btn">+ File</button>
+              <button class="btn" id="new-folder-btn">+ Folder</button>
+            </div>
+            <div class="tree-breadcrumb" id="current-folder-label">/</div>
+            <div class="file-list" id="file-tree"></div>
+          </div>
+
+          <div class="editor-wrap">
+            <div class="row spread">
+              <h3 id="editor-file-label">Editor</h3>
+              <div class="row">
+                <button class="btn secondary" id="rename-item-btn">Đổi tên</button>
+                <button class="btn danger" id="delete-item-btn">Xóa</button>
+                <button class="btn primary" id="save-file-btn">Lưu file</button>
+              </div>
+            </div>
+            <textarea id="editor" placeholder="Chọn file bên trái để sửa..."></textarea>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script type="module" src="/js/manager.js"></script>
+  </body>
+</html>
